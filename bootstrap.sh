@@ -34,6 +34,19 @@ DEFAULT_SELECTED=(
   "copilot"
 )
 
+ensure_xcode_cli_tools() {
+  if xcode-select -p >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "Xcode Command Line Tools not found. Installing..."
+  xcode-select --install
+
+  echo
+  echo "After the installer finishes, run this script again."
+  exit 1
+}
+
 ensure_brew() {
   if need_cmd brew; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -59,6 +72,7 @@ brew_install() {
   # brew list "$pkg" >/dev/null 2>&1 || brew install "$pkg"
 }
 
+ensure_xcode_cli_tools
 ensure_brew
 ensure_gum
 
