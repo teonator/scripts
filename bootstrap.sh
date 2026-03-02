@@ -31,7 +31,23 @@ DEFAULT_SELECTED=(
   "visual-studio-code"
   "google-chrome"
   "notion"
-  "copilot"
+  "copilot-cli"
+)
+
+VSCODE_EXTENSION_OPTIONS=(
+  "ms-vscode-remote.remote-containers"
+  "ms-azuretools.vscode-containers"
+  "ms-kubernetes-tools.vscode-kubernetes-tools"
+  "devsense.composer-php-vscode"
+  "devsense.phptools-vscode"
+  "devsense.profiler-php-vscode"
+  "xdebug.php-debug"
+  "github.copilot-chat"
+  "saoudrizwan.claude-dev"
+  "ms-vscode.sublime-keybindings"
+)
+
+VSCODE_DEFAULT_SELECTED=(  
 )
 
 ensure_xcode_cli_tools() {
@@ -72,6 +88,52 @@ brew_install() {
   # brew list "$pkg" >/dev/null 2>&1 || brew install "$pkg"
 }
 
+choose_vscode_extensions() {
+  local selected_pkgs="$1"
+  local gum_default_args=()
+
+  [[ "$selected_pkgs" != *"visual-studio-code"* ]] && return
+
+  for extension in "${VSCODE_DEFAULT_SELECTED[@]}"; do
+    gum_default_args+=( --selected "$extension" )
+  done
+
+  gum choose --no-limit \
+    --header="Choose VS Code extensions:" \
+    --cursor="> " \
+    --cursor-prefix="[ ] " \
+    --selected-prefix="[X] " \
+    --unselected-prefix="[ ] " \
+    "${gum_default_args[@]}" \
+    "${VSCODE_EXTENSION_OPTIONS[@]}"
+}
+
+install_vscode_extensions() {
+  local selected_pkgs="$1"
+  local selected_extensions="$2"
+  local code_cmd=""
+
+  [[ "$selected_pkgs" != *"visual-studio-code"* ]] && return
+  [[ -z "${selected_extensions// }" ]] && return
+
+  if need_cmd code; then
+    code_cmd="code"
+  elif [[ -x "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]]; then
+    code_cmd="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+  else
+    echo "VS Code installed but CLI command not found. Skipping extension install."
+    return
+  fi
+
+  while IFS= read -r extension; do
+    [[ -z "${extension// }" ]] && continue
+    echo "❯ $code_cmd --install-extension $extension"
+    if ! "$code_cmd" --install-extension "$extension"; then
+      echo "Failed to install VS Code extension: $extension"
+    fi
+  done <<< "$selected_extensions"
+}
+
 ensure_xcode_cli_tools
 ensure_brew
 ensure_gum
@@ -83,6 +145,7 @@ done
 
 selected=$(
   gum choose --no-limit \
+    --header="Choose Homebrew packages:" \
     --cursor="> " \
     --cursor-prefix="[ ] " \
     --selected-prefix="[X] " \
@@ -95,6 +158,8 @@ if [[ -z "${selected// }" ]]; then
   gum style --foreground 244 "No options selected."
   exit 0
 fi
+
+selected_vscode_extensions="$(choose_vscode_extensions "$selected")"
 
 gum style --border rounded --padding "0 1" --margin "1 0" \
   "$(printf "%s\n" "$selected" | sed 's/^/• /')"
@@ -110,5 +175,7 @@ while IFS= read -r pkg; do
   brew_install "$pkg"
   echo
 done <<< "$selected"
+
+install_vscode_extensions "$selected" "$selected_vscode_extensions"
 
 echo "Done."
