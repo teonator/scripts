@@ -17,6 +17,7 @@ BREW_OPTIONS=(
   "ruby"
   "notion"
   "obsidian"
+  "affine"
   "postman"
   "insomnia"
   "copilot-cli"
