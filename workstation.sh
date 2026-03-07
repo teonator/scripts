@@ -161,8 +161,19 @@ fi
 
 selected_vscode_extensions="$(choose_vscode_extensions "$selected")"
 
+summary=""
+while IFS= read -r pkg; do
+  summary+="• $pkg\n"
+  if [[ "$pkg" == "visual-studio-code" && -n "${selected_vscode_extensions// }" ]]; then
+    while IFS= read -r ext; do
+      [[ -z "${ext// }" ]] && continue
+      summary+="  • $ext\n"
+    done <<< "$selected_vscode_extensions"
+  fi
+done <<< "$selected"
+
 gum style --border rounded --padding "0 1" --margin "1 0" \
-  "$(printf "%s\n" "$selected" | sed 's/^/• /')"
+  "$(printf "%b" "$summary")"
 
 if ! gum confirm "Proceed to install these packages?"; then
   gum style --foreground 244 "Cancelled."
