@@ -29,10 +29,6 @@ BREW_OPTIONS=(
 )
 
 BREW__DEFAULT_SELECTED=(
-  "visual-studio-code"
-  "google-chrome"
-  "notion"
-  "copilot-cli"
 )
 
 VSCODE_OPTIONS=(
@@ -103,11 +99,19 @@ brew_install() {
   # brew list "$pkg" >/dev/null 2>&1 || brew install "$pkg"
 }
 
+vscode_available() {
+  local selected_pkgs="$1"
+  [[ "$selected_pkgs" == *"visual-studio-code"* ]] && return 0
+  need_cmd code && return 0
+  [[ -x "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]] && return 0
+  return 1
+}
+
 choose_vscode_extensions() {
   local selected_pkgs="$1"
   local gum_default_args=()
 
-  [[ "$selected_pkgs" != *"visual-studio-code"* ]] && return
+  vscode_available "$selected_pkgs" || return
 
   for extension in "${VSCODE_DEFAULT_SELECTED[@]+"${VSCODE_DEFAULT_SELECTED[@]}"}"; do
     gum_default_args+=( --selected "$extension" )
@@ -128,7 +132,7 @@ install_vscode_extensions() {
   local selected_extensions="$2"
   local code_cmd=""
 
-  [[ "$selected_pkgs" != *"visual-studio-code"* ]] && return
+  vscode_available "$selected_pkgs" || return
   [[ -z "${selected_extensions// }" ]] && return
 
   if need_cmd code; then
@@ -199,7 +203,9 @@ fi
 while IFS= read -r pkg; do
   [[ -z "${pkg// }" ]] && continue
   echo "❯ brew install $pkg"
-  brew_install "$pkg"
+  if ! brew_install "$pkg"; then
+    echo "Failed to install $pkg, skipping."
+  fi
   echo
 done <<< "$selected"
 
