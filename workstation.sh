@@ -36,16 +36,30 @@ BREW__DEFAULT_SELECTED=(
 )
 
 VSCODE_OPTIONS=(
-  "ms-vscode-remote.remote-containers"
-  "ms-azuretools.vscode-containers"
-  "ms-kubernetes-tools.vscode-kubernetes-tools"
-  "devsense.composer-php-vscode"
-  "devsense.phptools-vscode"
-  "devsense.profiler-php-vscode"
-  "xdebug.php-debug"
-  "github.copilot-chat"
-  "saoudrizwan.claude-dev"
-  "ms-vscode.sublime-keybindings"
+  "ms-vscode-remote.remote-ssh (Remote - SSH)"
+  "ms-vscode-remote.remote-ssh-edit (Remote - SSH: Editing Configuration Files)"
+  "ms-vscode.remote-explorer (Remote - Explorer)"
+  "ms-vscode-remote.remote-containers (Dev Containers)"
+  "ms-azuretools.vscode-containers (Docker)"
+  "ms-kubernetes-tools.vscode-kubernetes-tools (Kubernetes Tools)"
+  "xdebug.php-debug (PHP Debug)"
+  "devsense.composer-php-vscode (PHP Composer)"
+  "devsense.phptools-vscode (PHP Tools)"
+  "devsense.profiler-php-vscode (PHP Profiler)"
+  "devsense.intelli-php-vscode (IntelliPHP)"
+  "laravel.vscode-laravel (Laravel)"
+  "ryannaddy.laravel-artisan (Laravel Artisan)"
+  "onecentlin.laravel5-snippets (Laravel Snippets)"
+  "onecentlin.laravel-blade (Laravel Blade Snippets)"
+  "github.copilot-chat (GitHub Copilot Chat)"
+  "saoudrizwan.claude-dev (Cline)"
+  "eamodio.gitlens (GitLens)"
+  "sleistner.vscode-fileutils (File Utils)"
+  "chouzz.vscode-better-align (Better Align)"
+  "esbenp.prettier-vscode (Prettier - Code formatter)"
+  "mikestead.dotenv (DotENV)"
+  "redhat.vscode-yaml (YAML)"
+  "ms-vscode.sublime-keybindings (Sublime Keybindings)"
 )
 
 VSCODE_DEFAULT_SELECTED=(  
@@ -128,9 +142,10 @@ install_vscode_extensions() {
 
   while IFS= read -r extension; do
     [[ -z "${extension// }" ]] && continue
-    echo "❯ $code_cmd --install-extension $extension"
-    if ! "$code_cmd" --install-extension "$extension"; then
-      echo "Failed to install VS Code extension: $extension"
+    extension_id=$(sed 's/ (.*//' <<< "$extension")
+    echo "❯ $code_cmd --install-extension $extension_id"
+    if ! "$code_cmd" --install-extension "$extension_id"; then
+      echo "Failed to install VS Code extension: $extension_id"
     fi
   done <<< "$selected_extensions"
 }
