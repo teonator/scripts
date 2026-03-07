@@ -27,14 +27,14 @@ BREW_OPTIONS=(
   "ngrok"
 )
 
-DEFAULT_SELECTED=(
+BREW__DEFAULT_SELECTED=(
   "visual-studio-code"
   "google-chrome"
   "notion"
   "copilot-cli"
 )
 
-VSCODE_EXTENSION_OPTIONS=(
+VSCODE_OPTIONS=(
   "ms-vscode-remote.remote-containers"
   "ms-azuretools.vscode-containers"
   "ms-kubernetes-tools.vscode-kubernetes-tools"
@@ -94,7 +94,7 @@ choose_vscode_extensions() {
 
   [[ "$selected_pkgs" != *"visual-studio-code"* ]] && return
 
-  for extension in "${VSCODE_DEFAULT_SELECTED[@]}"; do
+  for extension in "${VSCODE_DEFAULT_SELECTED[@]+"${VSCODE_DEFAULT_SELECTED[@]}"}"; do
     gum_default_args+=( --selected "$extension" )
   done
 
@@ -104,8 +104,8 @@ choose_vscode_extensions() {
     --cursor-prefix="[ ] " \
     --selected-prefix="[X] " \
     --unselected-prefix="[ ] " \
-    "${gum_default_args[@]}" \
-    "${VSCODE_EXTENSION_OPTIONS[@]}"
+    "${gum_default_args[@]+"${gum_default_args[@]}"}" \
+    "${VSCODE_OPTIONS[@]}"
 }
 
 install_vscode_extensions() {
@@ -139,7 +139,7 @@ ensure_brew
 ensure_gum
 
 gum_default_args=()
-for pkg in "${DEFAULT_SELECTED[@]}"; do
+for pkg in "${BREW__DEFAULT_SELECTED[@]+"${BREW__DEFAULT_SELECTED[@]}"}"; do
   gum_default_args+=( --selected "$pkg" )
 done
 
@@ -150,7 +150,7 @@ selected=$(
     --cursor-prefix="[ ] " \
     --selected-prefix="[X] " \
     --unselected-prefix="[ ] " \
-    "${gum_default_args[@]}" \
+    "${gum_default_args[@]+"${gum_default_args[@]}"}" \
     "${BREW_OPTIONS[@]}"
 )
 
